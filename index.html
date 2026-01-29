@@ -1,0 +1,2531 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>骰子系统插件使用教程 v3.80</title>
+
+    <meta property="og:title" content="骰子系统插件使用教程 v3.80">
+
+    <meta property="og:type" content="website">
+
+    <meta property="og:description" content="点击查看骰子系统的详细指令、安装方法及常见问题解答。">
+
+    <meta property="og:image" content="https://dicesystem.netlify.app/人物关系图效果预览.png">
+
+    <meta name="theme-color" content="#6366f1">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        // 下面接着是你原来的 tailwind 配置...
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1', // Indigo 500
+                        secondary: '#64748b', // Slate 500
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', Roboto, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .prose h2 {
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        .prose h2::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 3rem;
+            height: 4px;
+            background-color: #6366f1;
+            border-radius: 2px;
+        }
+
+        /* 模态框动画 */
+        .modal-enter { opacity: 0; transform: scale(0.95); }
+        .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 300ms ease-out, transform 300ms ease-out; }
+        .modal-exit { opacity: 1; transform: scale(1); }
+        .modal-exit-active { opacity: 0; transform: scale(0.95); transition: opacity 200ms ease-in, transform 200ms ease-in; }
+
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* 图片容器悬浮效果 */
+        .img-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: zoom-in; /* 鼠标悬停显示放大镜 */
+        }
+        .img-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200 min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- 顶部导航栏 -->
+    <header class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-600 text-white p-1.5 rounded-lg shadow-sm">
+                    <i class="fa-solid fa-dice-d20 text-xl w-6 h-6 flex items-center justify-center"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight leading-tight">
+                        骰子系统 <span class="text-indigo-600 dark:text-indigo-400">v3.80</span>
+                    </h1>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">酒馆助手插件指南</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button onclick="toggleDarkMode()" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-500 dark:text-gray-400">
+                    <i class="fa-solid fa-moon hidden dark:block"></i>
+                    <i class="fa-solid fa-sun block dark:hidden text-amber-500"></i>
+                </button>
+                <!-- 版本按钮 -->
+                <button onclick="toggleModal('about-modal')" class="hidden sm:flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors text-gray-600 dark:text-gray-300">
+                    <span id="btn-version-text">v3.80 说明</span>
+                    <i class="fa-solid fa-circle-info text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容区域 -->
+    <main class="flex-grow max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+    <!-- 欢迎横幅 -->
+    <div class="relative bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 mb-10 text-white overflow-hidden shadow-lg">
+        <div class="absolute right-0 top-0 h-full w-1/3 bg-white/10 skew-x-12 translate-x-12"></div>
+        <div class="relative z-10">
+            <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+                <div class="flex-grow">
+                    <div class="flex items-center gap-3 mb-3">
+                        <h2 class="text-3xl font-extrabold">骰子系统插件</h2>
+                        <span class="px-3 py-1 bg-white/20 rounded-full text-sm font-medium backdrop-blur-sm">v3.80</span>
+                    </div>
+                    <p class="text-indigo-100 text-lg mb-4">
+                        最初只是一个简单的投骰工具，如今已进化为功能完备的 AIRP 辅助系统。
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="inline-flex items-center px-3 py-1 bg-white/15 rounded-full text-sm backdrop-blur-sm">
+                            <i class="fa-solid fa-dice mr-1.5"></i> COC/DND 双规则投骰
+                        </span>
+                        <span class="inline-flex items-center px-3 py-1 bg-white/15 rounded-full text-sm backdrop-blur-sm">
+                            <i class="fa-solid fa-gauge-high mr-1.5"></i> 可视化仪表盘
+                        </span>
+                        <span class="inline-flex items-center px-3 py-1 bg-white/15 rounded-full text-sm backdrop-blur-sm">
+                            <i class="fa-solid fa-table mr-1.5"></i> 表格卡片化展示
+                        </span>
+                        <span class="inline-flex items-center px-3 py-1 bg-white/15 rounded-full text-sm backdrop-blur-sm">
+                            <i class="fa-solid fa-diagram-project mr-1.5"></i> 人物关系图谱
+                        </span>
+                        <span class="inline-flex items-center px-3 py-1 bg-white/15 rounded-full text-sm backdrop-blur-sm">
+                            <i class="fa-solid fa-clipboard-check mr-1.5"></i> 数据变更审核
+                        </span>
+                    </div>
+                </div>
+                <div class="flex-shrink-0 hidden lg:flex items-center gap-3">
+                    <div class="text-right">
+                        <div class="text-indigo-200 text-sm">当前版本</div>
+                        <div class="text-2xl font-bold">v3.80</div>
+                    </div>
+                    <div class="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                        <i class="fa-solid fa-dice-d20 text-3xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 最新功能 v3.80 -->
+    <div class="mb-10 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 rounded-xl border border-teal-200 dark:border-teal-700/50 p-6">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="px-3 py-1 bg-teal-600 text-white text-sm font-bold rounded-full">v3.80 新功能</span>
+            <span class="text-teal-700 dark:text-teal-300 font-bold">本次更新亮点</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-teal-100 dark:bg-teal-800 flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-sliders text-teal-600 dark:text-teal-300"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-gray-900 dark:text-white">变量面板</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">全新的变量管理界面，支持 MVU/ERA 格式变量的查看、编辑和快捷检定。提供数值过滤模式和层级简化功能，可自定义过滤黑名单。</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-cyan-100 dark:bg-cyan-800 flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-wand-magic-sparkles text-cyan-600 dark:text-cyan-300"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-gray-900 dark:text-white">自定义交互规则</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">自定义卡片底部的快捷按钮，通过 JSON 配置关键词匹配和提示词模板，支持规则的导入导出。</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-800 flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-code text-violet-600 dark:text-violet-300"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-gray-900 dark:text-white">正则转换规则</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">使用正则表达式自动修改表格数据，适用于批量清理 AI 生成的冗余内容、统一格式等场景。支持预设管理和酒馆正则导入。</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-800 flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-map text-emerald-600 dark:text-emerald-300"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-gray-900 dark:text-white">地图功能</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">可视化地图模块，展示次要地点、详细地点网格和互动元素。支持快速定位当前位置，点击地点或角色呼出详情卡片。</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-800 flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-star text-rose-600 dark:text-rose-300"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-gray-900 dark:text-white">收藏夹面板</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">跨聊天、跨角色卡收藏任意卡片。支持标签分类、过滤筛选，可将收藏的卡片智能发送到当前表格中。</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-800 flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-sync text-amber-600 dark:text-amber-300"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-gray-900 dark:text-white">属性规则自动同步模板</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">切换自定义属性规则时，自动修改表格模板以匹配新规则（仅支持同捆表格模板）。无需手动调整，切换规则更加便捷。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 效果预览 -->
+    <div class="mb-10">
+        <div class="text-center mb-4">
+            <span class="px-4 py-1.5 bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-bold rounded-full">
+                <i class="fa-solid fa-images mr-1.5"></i> 效果预览
+            </span>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <!-- 例图1 - 仪表盘，横向，占2列 -->
+            <div class="lg:col-span-2 img-card rounded-xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700">
+                <img src="assets\仪表盘效果预览.png" alt="仪表盘效果预览" class="w-full h-auto" loading="lazy">
+            </div>
+            <!-- 竖图列 - 人物卡片 + 对抗检定 -->
+            <div class="lg:row-span-2 flex flex-col gap-4">
+                <div class="img-card rounded-xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center bg-gray-900 flex-1">
+                    <img src="assets\人物卡片预览.png" alt="人物卡片预览" class="w-full h-auto max-h-full object-contain" loading="lazy">
+                </div>
+                <div class="img-card rounded-xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center bg-gray-900 flex-1">
+                    <img src="assets\对抗检定效果预览.png" alt="对抗检定效果预览" class="w-full h-auto max-h-full object-contain" loading="lazy">
+                </div>
+            </div>
+            <!-- 例图2 - 人物关系图，横向，占2列 -->
+            <div class="lg:col-span-2 img-card rounded-xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700">
+                <img src="assets\人物关系图效果预览.png" alt="人物关系图效果预览" class="w-full h-auto" loading="lazy">
+            </div>
+            <!-- 例图3 - 地图预览，横向，占全宽 -->
+            <div class="lg:col-span-3 img-card rounded-xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700">
+                <img src="assets\地图预览.png" alt="地图预览" class="w-full h-auto" loading="lazy">
+            </div>
+        </div>
+    </div>
+
+        <!-- Section 0: Prerequisites (Keep Existing) -->
+        <div class="bg-blue-50/50 dark:bg-gray-800/50 rounded-2xl border border-blue-100 dark:border-gray-700 p-6 mb-10">
+            <div class="flex items-start gap-4">
+                <div class="flex-shrink-0 mt-1">
+                     <i class="fa-solid fa-clipboard-check text-2xl text-blue-500 dark:text-blue-400"></i>
+                </div>
+                <div class="flex-grow">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">安装前准备</h2>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">在开始使用前，请确保你的环境已满足以下要求。</p>
+                    <ul class="space-y-3">
+                        <li class="flex flex-wrap items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                            <i class="fa-solid fa-check text-green-500 mr-1"></i>
+                            <span>安装 <strong>数据库插件</strong></span>
+                            <a href="https://discord.com/channels/1134557553011998840/1429151492362862683" target="_blank" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-gray-600 hover:border-blue-300">
+                                <i class="fa-brands fa-discord mr-1"></i> 参考链接
+                            </a>
+                        </li>
+                        <li class="flex flex-wrap items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                            <i class="fa-solid fa-check text-green-500 mr-1"></i>
+                            <span>安装 <strong>酒馆助手</strong></span>
+                            <a href="https://n0vi028.github.io/JS-Slash-Runner-Doc/" target="_blank" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-gray-600 hover:border-blue-300">
+                                <i class="fa-solid fa-book-open mr-1"></i> 参考文档
+                            </a>
+                        </li>
+                        <li class="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                            <i class="fa-solid fa-check text-green-500 mt-1 mr-1"></i>
+                            <div class="flex-1">
+                                <span>导入表格模板：</span>
+                                <code class="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 px-1 rounded text-xs text-pink-600 dark:text-pink-400">骰子系统表格模板.json</code></span>
+                            </div>
+                        </li>
+                        <li class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                             <i class="fa-solid fa-check text-green-500 mr-1"></i>
+                            <span>导入脚本：<code class="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 px-1 rounded text-xs text-pink-600 dark:text-pink-400">酒馆助手脚本-骰子系统.json</code></span>
+                        </li>
+                    </ul>
+
+                    <div class="mt-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-lg p-3">
+                        <p class="text-amber-700 dark:text-amber-300 text-sm flex items-start gap-2">
+                            <i class="fa-solid fa-rotate mt-0.5"></i>
+                            <span><strong>重要：</strong>在酒馆助手中导入脚本后，请<strong>刷新页面</strong>以确保插件正确加载。</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Section 0: 安装前准备 -->
+        <section id="section-prerequisites" class="mb-16">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 font-bold">0</span>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">安装前准备</h2>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                <!-- 图片展示区域 (放在最前面) -->
+                <div class="p-6 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700">
+                    <div class="text-center mb-3">
+                        <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 text-xs font-bold rounded-full">安装流程图解</span>
+                    </div>
+                    <!-- 图片容器：相对定位以支持热区覆盖 -->
+                    <div class="relative img-card rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 max-w-5xl mx-auto shadow-lg">
+                        <img src="assets\0-前期准备.png" alt="安装前准备流程图" class="w-full h-auto" loading="lazy">
+                        <!-- 可点击热区：覆盖左上角"点击此处"区域 (①) -->
+                        <a href="https://discord.com/channels/1134557553011998840/1455849435325010046/1455849435325010046"
+                           target="_blank"
+                           class="absolute top-[2%] left-[1%] w-[28%] h-[16%] bg-transparent hover:bg-indigo-500/20 transition-colors cursor-pointer rounded-lg"
+                           title="点击前往下载页面">
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 流程步骤 (放在图片后面) -->
+                <div class="p-6">
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        在开始使用骰子系统前，请按以下步骤完成环境配置。整个过程约需 5-10 分钟。
+                    </p>
+
+                    <!-- 步骤流程 -->
+                    <div class="space-y-4">
+                        <!-- 步骤 1 -->
+                        <div class="flex gap-4 p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm">1</div>
+                            <div class="flex-grow">
+                                <h4 class="font-bold text-gray-900 dark:text-white mb-1">安装酒馆助手</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                    酒馆助手是本插件的运行基础，请先完成安装。
+                                </p>
+                                <a href="https://n0vi028.github.io/JS-Slash-Runner-Doc/guide/%E5%85%B3%E4%BA%8E%E9%85%92%E9%A6%86%E5%8A%A9%E6%89%8B/%E5%AE%89%E8%A3%85%E4%B8%8E%E6%9B%B4%E6%96%B0.html" target="_blank" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors">
+                                    <i class="fa-solid fa-book-open mr-1.5"></i> 查看安装教程
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- 步骤 2 -->
+                        <div class="flex gap-4 p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm">2</div>
+                            <div class="flex-grow">
+                                <h4 class="font-bold text-gray-900 dark:text-white mb-1">安装数据库插件</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                    数据库插件用于存储和管理表格数据，是骰子系统的数据基础。
+                                </p>
+                                <a href="https://discord.com/channels/1134557553011998840/1429151492362862683/1454861984674742446" target="_blank" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
+                                    <i class="fa-brands fa-discord mr-1.5"></i> 查看数据库教程
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- 步骤 3 -->
+                        <div class="flex gap-4 p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm">3</div>
+                            <div class="flex-grow">
+                                <h4 class="font-bold text-gray-900 dark:text-white mb-1">下载最新版本</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                    从 Google Drive 下载最新版骰子系统压缩包。
+                                </p>
+                                <div class="flex flex-wrap gap-2 mt-3">
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">压缩包内含：</div>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                                        <i class="fa-solid fa-file-lines mr-1"></i> README.html
+                                    </span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
+                                        <i class="fa-solid fa-table mr-1"></i> 表格模板.json
+                                    </span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+                                        <i class="fa-solid fa-image mr-1"></i> 头像管理示例.json
+                                    </span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
+                                        <i class="fa-solid fa-file-code mr-1"></i> 骰子系统脚本.json
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 步骤 4 -->
+                        <div class="flex gap-4 p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm">4</div>
+                            <div class="flex-grow">
+                                <h4 class="font-bold text-gray-900 dark:text-white mb-1">导入表格模板</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                    将表格模板导入数据库插件。
+                                </p>
+                                <div class="bg-slate-100 dark:bg-slate-700/50 rounded-lg p-3 mt-2">
+                                    <p class="text-xs text-gray-600 dark:text-gray-300 font-mono leading-relaxed">
+                                        <span class="text-gray-400">路径：</span>
+                                        酒馆左下角 <i class="fa-solid fa-wand-magic-sparkles text-purple-500 mx-1"></i> 魔术棒
+                                        <i class="fa-solid fa-chevron-right text-gray-400 mx-1"></i> 数据库
+                                        <i class="fa-solid fa-chevron-right text-gray-400 mx-1"></i> 左侧数据管理标签页，表格模块预设区域点击导入
+                                    </p>
+                                    <div class="mt-2 pt-2 border-t border-slate-200 dark:border-slate-600 space-y-1">
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 flex items-start gap-2">
+                                            <span class="text-red-500">①</span> 删除当前标识数据（如有旧数据）
+                                        </p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 flex items-start gap-2">
+                                            <span class="text-amber-500">②</span> 导入新模板
+                                        </p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 flex items-start gap-2">
+                                            <span class="text-green-500">③</span> 选择"模板覆盖最新层数据"
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- 新增警告提示 -->
+                                <div class="mt-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-700/50">
+                                    <div class="flex items-start gap-2">
+                                        <i class="fa-solid fa-exclamation-triangle text-red-500 mt-0.5 flex-shrink-0"></i>
+                                        <div class="text-sm text-red-800 dark:text-red-200">
+                                            <strong>注意！</strong> 以上步骤会<strong>删除当前聊天的旧表格数据和旧模板</strong>。
+                                            <p class="mt-1 text-red-700 dark:text-red-300 text-xs">
+                                                建议在<strong>新角色卡的新聊天</strong>中使用。如果一定要在旧卡中使用，请参考
+                                                <a href="https://discord.com/channels/1134557553011998840/1429151492362862683" target="_blank" class="underline hover:text-red-900 dark:hover:text-red-100">数据库主贴</a>
+                                                中关于如何手动重新填表的教程和讨论。
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 步骤 5 -->
+                        <div class="flex gap-4 p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm">5</div>
+                            <div class="flex-grow">
+                                <h4 class="font-bold text-gray-900 dark:text-white mb-1">导入骰子系统脚本</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                    在酒馆助手中导入 <code class="bg-gray-700 dark:bg-gray-600 px-1.5 py-0.5 rounded text-xs text-pink-400 dark:text-pink-300">骰子系统脚本.json</code> 文件。
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- 步骤 6 -->
+                        <div class="flex gap-4 p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm">6</div>
+                            <div class="flex-grow">
+                                <h4 class="font-bold text-gray-900 dark:text-white mb-1">刷新页面并开始使用</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                    <strong>刷新酒馆页面 (F5 或 Ctrl+R)</strong> 以确保插件正确加载，然后即可开始使用！
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 底部提示 -->
+                <div class="p-4 border-t border-gray-100 dark:border-gray-700">
+                    <div class="flex gap-3 text-sm text-amber-800 dark:text-amber-200 bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4 border border-amber-200 dark:border-amber-700/50">
+                        <i class="fa-solid fa-triangle-exclamation mt-0.5 flex-shrink-0"></i>
+                        <div class="space-y-2">
+                            <p><strong>常见问题：</strong></p>
+                            <ul class="list-disc list-inside space-y-1 text-amber-700 dark:text-amber-300">
+                                <li>导入脚本后没有任何反应 → 请确保已<strong>刷新页面</strong></li>
+                                <li>仪表盘或人际关系图显示异常 → 请检查<strong>表格模板是否正确导入</strong></li>
+                                <li>如果仍然无法使用，请尝试：
+                                    <ul class="list-disc list-inside ml-4 mt-1 text-xs space-y-0.5">
+                                        <li>清除浏览器本地数据（缓存、LocalStorage）</li>
+                                        <li>关闭除<strong>骰子系统</strong>与<strong>数据库</strong>以外的其他脚本</li>
+                                        <li>关闭酒馆美化等可能产生冲突的插件</li>
+                                        <li>使用无痕/隐私模式测试</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- 1. 仪表盘概览 -->
+        <section id="section-dashboard" class="mb-16">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 font-bold">1</span>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">仪表盘与导航</h2>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2">
+                    <div class="p-6 lg:p-8 flex flex-col justify-center border-b lg:border-b-0 lg:border-r border-gray-100 dark:border-gray-700">
+                        <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-gauge-high text-indigo-500"></i> 全局状态总览
+                        </h3>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+                            仪表盘是表格的可视化的核心控制台。这里汇集了主角的属性、人物列表、技能表、装备栏、物品栏、任务进度以及当前区域的可互动地点。
+                        </p>
+                        <ul class="space-y-3 text-sm text-gray-600 dark:text-gray-400">
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-user-tag text-purple-500 mt-1"></i>
+                                <span><strong>主角核心面板：</strong> 显示主角状态、资源、六维基础属性。</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-map-location-dot text-green-500 mt-1"></i>
+                                <span><strong>区域地图信息：</strong> 自动显示当前场景可互动的地点，点击即可让主角前往。</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-up-down text-blue-500 mt-1"></i>
+                                <span><strong>高度调节：</strong> 上下拖拽面板顶部边缘，可自由调整面板显示高度。</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-900/50 p-6 flex items-center justify-center">
+                        <!-- 图 1 -->
+                        <div class="img-card rounded-lg overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700 w-full max-w-md">
+                            <img src="assets\1-仪表盘1.png" alt="仪表盘概览" class="w-full h-auto" loading="lazy">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. 交互与快捷操作 -->
+        <section class="mb-16">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-cyan-100 dark:bg-cyan-900 text-cyan-600 dark:text-cyan-300 font-bold">2</span>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">快捷交互指令</h2>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <p class="text-gray-600 dark:text-gray-300 mb-6">
+                    无需手动输入繁琐的指令，仪表盘集成了大量一键操作功能。同时支持PC与移动端。
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- 图 2 -->
+                    <div class="order-2 md:order-1 img-card rounded-lg overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700">
+                        <img src="assets\2-仪表盘2.png" alt="快捷操作示意" class="w-full h-auto" loading="lazy">
+                    </div>
+                    <div class="order-1 md:order-2 space-y-6">
+                        <div class="flex gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center flex-shrink-0 text-indigo-600">
+                                <i class="fa-solid fa-dice"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 dark:text-white">投骰入口</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">点击骰子图标发起普通检定，系统会自动读取选中角色的属性数值。</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/50 flex items-center justify-center flex-shrink-0 text-red-600">
+                                <i class="fa-solid fa-gavel"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 dark:text-white">对抗检定</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">点击对抗图标，快速发起与该角色的对抗或交互检定。</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/50 flex items-center justify-center flex-shrink-0 text-green-600">
+                                <i class="fa-solid fa-map-location-dot"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 dark:text-white">地图入口</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">点击打开地图模块，显示地点与可互动元素。</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center flex-shrink-0 text-purple-600">
+                                <i class="fa-solid fa-project-diagram"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 dark:text-white">关系图入口</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">一键打开人物关系可视化界面及头像管理。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. 投骰与规则系统 -->
+        <section id="section-rules" class="mb-16">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900 text-amber-600 dark:text-amber-300 font-bold">3</span>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">投骰与规则系统</h2>
+            </div>
+
+            <!-- 为什么要使用投骰功能 -->
+            <div class="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl border border-amber-200 dark:border-amber-700/50 p-6 mb-6">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-3">为什么需要投骰？</h3>
+                <div class="space-y-3 text-sm text-gray-700 dark:text-gray-300">
+                    <p>
+                        在 AIRP 中，如果不引入<strong>真正的随机性</strong>，故事情节往往会陷入千篇一律的套路。这个问题<strong>无法通过预设或世界书的方案来完全解决</strong>——
+                    </p>
+                    <ul class="space-y-3 ml-4">
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-xmark text-red-500 mt-1 flex-shrink-0"></i>
+                            <div>
+                                <strong>世界书中让 AI 自己投骰：</strong>
+                                <span class="text-gray-600 dark:text-gray-400">AI只会幻觉出一个结果，用来服务于它所熟悉的，讨好用户的套路剧情展开</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-xmark text-red-500 mt-1 flex-shrink-0"></i>
+                            <div>
+                                <strong>要求"高难度模式"：</strong>
+                                <span class="text-gray-600 dark:text-gray-400">矫枉过正——用户想做的事情几乎没有能成功的</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-1 flex-shrink-0"></i>
+                            <div>
+                                <strong>用酒馆宏发送真随机结果：</strong>
+                                <span class="text-gray-600 dark:text-gray-400">能有所改善，但会消耗 AI 宝贵的注意力；且所有检定判断与描述仍由 AI 主导，故事走向依然趋于陈腐</span>
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="mt-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-lg border border-indigo-200/50 dark:border-indigo-700/30">
+                        <p class="flex items-start gap-2 text-indigo-800 dark:text-indigo-200 font-medium">
+                            <i class="fa-solid fa-brain text-indigo-500 mt-0.5 flex-shrink-0"></i>
+                            <span>一个好的 AIRP 体验需要<strong>人脑的参与</strong>。外部投骰让你掌握叙事节奏，由你来决定何时检定、检定什么，AI 只负责根据结果进行演绎。</span>
+                        </p>
+                    </div>
+                    <div class="mt-3 p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg border border-amber-200/50 dark:border-amber-700/30">
+                        <p class="flex items-start gap-2 text-gray-600 dark:text-gray-400">
+                            <i class="fa-solid fa-circle-info text-blue-500 mt-0.5 flex-shrink-0"></i>
+                            <span><strong>无需额外配置：</strong>你不需要在世界书中对"投骰"做任何解释或规范。AI 的世界知识足以理解这一机制。过多的关于“检定”“骰子”的额外说明，反而可能导致元叙事层面的要素不当地闯入角色扮演的故事文本中。</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 投骰使用指南 FAQ -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <!-- Q: 什么时候该投骰？ -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div class="bg-indigo-50 dark:bg-indigo-900/30 px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                        <h4 class="font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                            <i class="fa-solid fa-clock text-indigo-500"></i>
+                            我应该在什么时候投骰？
+                        </h4>
+                    </div>
+                    <div class="px-4 py-4 text-sm text-gray-600 dark:text-gray-300 space-y-3">
+                        <p>
+                            当主角或故事中的角色试图完成一个<strong>有挑战性的/不确定成败的行为</strong>时，你可以在描述完这次尝试以后使用骰子系统实施一次检定。
+                        </p>
+                        <p class="text-gray-500 dark:text-gray-400">
+                            用随机的骰子来裁决不确定事件的结果正是投骰存在的意义。<strong>你不需要为每一句话、每一个动作都投骰。只需要为那些结果不定的行为投骰</strong>
+                        </p>
+                        <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-3 space-y-2">
+                            <p class="flex items-start gap-2">
+                                <i class="fa-solid fa-lightbulb text-amber-500 mt-0.5 flex-shrink-0"></i>
+                                <span>一个常见的例子：“我试图说服<NPC>加入队伍。（元叙事：我发起了【魅力】检定，掷出90，需≤65，90>65，【失败】）”</span>
+                            </p>
+                            <p class="flex items-start gap-2">
+                                <i class="fa-solid fa-shuffle text-purple-500 mt-0.5 flex-shrink-0"></i>
+                                <span>如果你没什么特别想法，甚至可以<strong>随机选一个角色、随机选一个属性</strong>来投骰——看看 AI 会编出什么样的故事发展。</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q: 为什么不做自动投骰？ -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div class="bg-rose-50 dark:bg-rose-900/30 px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                        <h4 class="font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                            <i class="fa-solid fa-robot text-rose-500"></i>
+                            为什么不做成自动投骰？
+                        </h4>
+                    </div>
+                    <div class="px-4 py-4 text-sm text-gray-600 dark:text-gray-300 space-y-3">
+                        <p>
+                            自动投骰看起来很美好，但实际上会带来两个严重问题：
+                        </p>
+                        <ul class="space-y-2">
+                            <li class="flex items-start gap-2">
+                                <span class="flex-shrink-0 w-5 h-5 rounded-full bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-300 flex items-center justify-center text-xs font-bold">1</span>
+                                <span><strong>资源消耗：</strong>自动判断何时投骰需要占用 AI 的注意力，或需要额外的 API 调用。无论哪种方式，都会<strong>降低正文质量或增加响应时间</strong>。</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="flex-shrink-0 w-5 h-5 rounded-full bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-300 flex items-center justify-center text-xs font-bold">2</span>
+                                <span><strong>违背初衷：</strong>投骰系统的核心价值在于引入非 AI 的随机性。而一个由 AI 驱动的判断与检定引擎，<strong>几乎必然会让故事重新走向陈腐化</strong>。</span>
+                            </li>
+                        </ul>
+                        <p class="text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-100 dark:border-gray-700">
+                            手动投骰让你掌握叙事节奏，同时保证随机性的纯粹。
+                        </p>
+                        <div class="mt-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700/50">
+                            <p class="flex items-start gap-2 text-purple-800 dark:text-purple-200">
+                                <i class="fa-solid fa-bolt text-purple-500 mt-0.5 flex-shrink-0"></i>
+                                <span><strong>疯狂模式：</strong>如果你真的想体验自动投骰，可以在<strong>设置 → 高级设置</strong>中开启"疯狂模式"，启用完全随机的自动投骰。具体效果请亲自尝试！</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                <!-- 功能介绍区域 -->
+                <div class="p-6 border-b border-gray-100 dark:border-gray-700">
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        插件内置了功能完备的投骰系统，支持<strong>普通检定</strong>与<strong>对抗检定</strong>两种模式，并提供 COC / DND 双规则配置。
+                    </p>
+
+                    <!-- 功能列表 -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center flex-shrink-0 text-indigo-600">
+                                <i class="fa-solid fa-dice-d20"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-gray-900 dark:text-white">骰子面数设定</h4>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">支持 1d20、1d100、自定义等多种骰型</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                            <div class="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center flex-shrink-0 text-purple-600">
+                                <i class="fa-solid fa-user-check"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-gray-900 dark:text-white">快捷选择参与者</h4>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">一键选择检定角色，自动读取属性值</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center flex-shrink-0 text-emerald-600">
+                                <i class="fa-solid fa-sliders"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-gray-900 dark:text-white">难度等级与修正值</h4>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">设置普通/困难/极难，支持数值修正</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                            <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center flex-shrink-0 text-amber-600">
+                                <i class="fa-solid fa-gears"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-gray-900 dark:text-white">COC / DND 规则</h4>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">自定义大成功/大失败阈值与平手规则</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 新增功能标签 -->
+                    <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="text-sm font-bold text-gray-700 dark:text-gray-300">v3.00 新增功能：</span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="flex gap-3 p-3 bg-teal-50 dark:bg-teal-900/20 rounded-lg border border-teal-200 dark:border-teal-700/50">
+                                <div class="w-8 h-8 rounded-lg bg-teal-100 dark:bg-teal-900/50 flex items-center justify-center flex-shrink-0 text-teal-600">
+                                    <i class="fa-solid fa-eye-slash"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-sm text-gray-900 dark:text-white">隐藏检定结果</h4>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">开启后你看不到投骰结果，但 AI 仍可看到</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 p-3 bg-cyan-50 dark:bg-cyan-900/20 rounded-lg border border-cyan-200 dark:border-cyan-700/50">
+                                <div class="w-8 h-8 rounded-lg bg-cyan-100 dark:bg-cyan-900/50 flex items-center justify-center flex-shrink-0 text-cyan-600">
+                                    <i class="fa-solid fa-shuffle"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-sm text-gray-900 dark:text-white">随机检定</h4>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">随机选择一个检定名，支持 COC/DND 混合模式</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 p-3 bg-violet-50 dark:bg-violet-900/20 rounded-lg border border-violet-200 dark:border-violet-700/50">
+                                <div class="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center flex-shrink-0 text-violet-600">
+                                    <i class="fa-solid fa-dice"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-sm text-gray-900 dark:text-white">随机属性</h4>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">一键为当前角色随机生成属性值</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 p-3 bg-rose-50 dark:bg-rose-900/20 rounded-lg border border-rose-200 dark:border-rose-700/50">
+                                <div class="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-900/50 flex items-center justify-center flex-shrink-0 text-rose-600">
+                                    <i class="fa-solid fa-layer-group"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-sm text-gray-900 dark:text-white">属性规则预设</h4>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">管理随机属性的生成规则，支持导入导出</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 图片展示区域 -->
+                <div class="p-6 bg-gray-50 dark:bg-gray-900/50">
+                    <div class="space-y-6">
+                        <!-- 图 1 - 投骰面板基础功能 -->
+                        <div>
+                            <div class="text-center mb-3">
+                                <span class="px-3 py-1 bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200 text-xs font-bold rounded-full">投骰面板 - 基础功能</span>
+                            </div>
+                            <div class="img-card rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 max-w-5xl mx-auto">
+                                <img src="assets/3-投骰系统1.png" alt="投骰系统 - 基础功能" class="w-full h-auto" loading="lazy">
+                            </div>
+                            <div class="mt-3 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                                <div class="p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                                    <span class="font-bold text-gray-800 dark:text-gray-200">普通检定</span>
+                                    <span class="text-gray-500 dark:text-gray-400 text-xs ml-1">单一角色发起，投骰结果需小于属性值</span>
+                                </div>
+                                <div class="p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                                    <span class="font-bold text-gray-800 dark:text-gray-200">对抗检定</span>
+                                    <span class="text-gray-500 dark:text-gray-400 text-xs ml-1">双方同时检定，更高难度等级成功者胜出</span>
+                                </div>
+                                <div class="p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                                    <span class="font-bold text-gray-800 dark:text-gray-200">骰子面数</span>
+                                    <span class="text-gray-500 dark:text-gray-400 text-xs ml-1">点击骰子图标或手动输入设定面数</span>
+                                </div>
+                            </div>
+                            <!-- 提示信息 -->
+                            <div class="mt-4 max-w-4xl mx-auto space-y-2">
+                                <div class="flex gap-2 text-sm text-amber-800 dark:text-amber-200 bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 border border-amber-200 dark:border-amber-700/50">
+                                    <i class="fa-solid fa-gavel mt-0.5 flex-shrink-0"></i>
+                                    <span><strong>关于对抗检定：</strong>高难度等级的成功总是优于低难度等级（如大成功 > 困难成功）。你可以自定义对抗检定平手时的规则（判胜、判负或平局），推荐设置为"平手"。</span>
+                                </div>
+                                <div class="flex gap-2 text-sm text-teal-800 dark:text-teal-200 bg-teal-50 dark:bg-teal-900/20 rounded-lg p-3 border border-teal-200 dark:border-teal-700/50">
+                                    <i class="fa-solid fa-eye-slash mt-0.5 flex-shrink-0"></i>
+                                    <span><strong>关于隐藏结果：</strong>开启"隐藏输入栏中的检定结果"以及“隐藏聊天记录中的检定结果”后，你将无法看到具体的投骰数值，但 AI 仍然可以看到并据此推进剧情，适合追求沉浸感的玩家。</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 图 2 - 规则与高级设置 -->
+                        <div>
+                            <div class="text-center mb-3">
+                                <span class="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200 text-xs font-bold rounded-full">投骰面板 - 规则与高级设置</span>
+                            </div>
+                            <div class="img-card rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 max-w-5xl mx-auto">
+                                <img src="assets/4-投骰系统2.png" alt="投骰系统 - 规则与高级设置" class="w-full h-auto" loading="lazy">
+                            </div>
+                            <div class="mt-3 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-3 text-sm">
+                                <div class="p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                                    <span class="font-bold text-gray-800 dark:text-gray-200">规则设置</span>
+                                    <span class="text-gray-500 dark:text-gray-400 text-xs ml-1">COC/DND 阈值配置</span>
+                                </div>
+                                <div class="p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                                    <span class="font-bold text-gray-800 dark:text-gray-200">难度等级</span>
+                                    <span class="text-gray-500 dark:text-gray-400 text-xs ml-1">普通/困难/极难</span>
+                                </div>
+                                <div class="p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                                    <span class="font-bold text-gray-800 dark:text-gray-200">随机属性</span>
+                                    <span class="text-gray-500 dark:text-gray-400 text-xs ml-1">按规则随机填入属性值</span>
+                                </div>
+                                <div class="p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                                    <span class="font-bold text-gray-800 dark:text-gray-200">隐藏检定结果</span>
+                                    <span class="text-gray-500 dark:text-gray-400 text-xs ml-1">仅 AI 可见结果</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 图 3 - 属性规则预设管理 -->
+                        <div>
+                            <div class="text-center mb-3">
+                                <span class="px-3 py-1 bg-violet-100 dark:bg-violet-900/50 text-violet-800 dark:text-violet-200 text-xs font-bold rounded-full">属性规则预设管理 <span class="text-xs font-normal ml-1">v3.00 新增</span></span>
+                            </div>
+                            <div class="img-card rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 max-w-5xl mx-auto">
+                                <img src="assets/12-属性规则预设.png" alt="属性规则预设管理" class="w-full h-auto" loading="lazy">
+                            </div>
+                            <div class="mt-3 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                                <div class="p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                                    <span class="font-bold text-gray-800 dark:text-gray-200">内置规则</span>
+                                    <span class="text-gray-500 dark:text-gray-400 text-xs ml-1">简化 COC/DND 规则可直接使用</span>
+                                </div>
+                                <div class="p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                                    <span class="font-bold text-gray-800 dark:text-gray-200">自定义预设</span>
+                                    <span class="text-gray-500 dark:text-gray-400 text-xs ml-1">通过 JSON 配置自定义属性生成规则</span>
+                                </div>
+                                <div class="p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                                    <span class="font-bold text-gray-800 dark:text-gray-200">导入导出</span>
+                                    <span class="text-gray-500 dark:text-gray-400 text-xs ml-1">分享和备份你的规则预设</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. 审核面板与数据验证 -->
+        <section id="section-audit" class="mb-16">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-pink-100 dark:bg-pink-900 text-pink-600 dark:text-pink-300 font-bold">4</span>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">审核面板与数据验证 </h2>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                <!-- 功能概述 -->
+                <div class="p-6 border-b border-gray-100 dark:border-gray-700">
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        审核面板是数据管理的核心控制台，集成了<strong>数据更新审核</strong>与<strong>数据验证</strong>两大功能。通过右上角的过滤器图标可在两种模式间切换。
+                    </p>
+
+                    <!-- 双模式说明 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700/50">
+                            <h4 class="font-bold text-blue-800 dark:text-blue-200 mb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-list-check"></i> 更新审核模式
+                            </h4>
+                            <p class="text-sm text-blue-700 dark:text-blue-300">显示 AI 对表格的所有变更，供你逐条确认、修改或回滚。</p>
+                        </div>
+                        <div class="p-4 bg-teal-50 dark:bg-teal-900/20 rounded-lg border border-teal-200 dark:border-teal-700/50">
+                            <h4 class="font-bold text-teal-800 dark:text-teal-200 mb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-shield-check"></i> 数据验证模式
+                            </h4>
+                            <p class="text-sm text-teal-700 dark:text-teal-300">仅显示违反自定义规则的数据，并提供智能修改建议。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 更新审核部分 -->
+                <div class="p-6 border-b border-gray-100 dark:border-gray-700">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-clipboard-check text-blue-500"></i>
+                        更新审核
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        当 AI 修改表格数据时，不再是"黑箱操作"。审核面板会列出所有变更，供你逐条确认。
+                    </p>
+                    <div class="flex flex-wrap gap-4 text-sm mb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                            <span><strong>新增</strong> [新]</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                            <span><strong>更新</strong> [更]</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                            <span><strong>删除</strong> [删]</span>
+                        </div>
+                    </div>
+
+                    <!-- 图 5 - 审核面板 -->
+                    <div class="img-card rounded-lg overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700 max-w-4xl mx-auto">
+                        <img src="assets/5-审核面板.png" alt="更新审核面板" class="w-full h-auto" loading="lazy">
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                        <div class="p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg text-center">
+                            <i class="fa-solid fa-list-check text-2xl text-blue-500 mb-2"></i>
+                            <h4 class="font-bold text-gray-800 dark:text-gray-100">批量操作</h4>
+                            <p class="text-xs text-gray-500 mt-1">一键"接受全部"或"回滚全部"，快速处理大量更新。</p>
+                        </div>
+                        <div class="p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg text-center">
+                            <i class="fa-solid fa-pen-to-square text-2xl text-purple-500 mb-2"></i>
+                            <h4 class="font-bold text-gray-800 dark:text-gray-100">智能编辑</h4>
+                            <p class="text-xs text-gray-500 mt-1">点击铅笔图标，可对比新旧值进行手动修正，支持单格和整行编辑。</p>
+                        </div>
+                        <div class="p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg text-center">
+                            <i class="fa-solid fa-rotate-left text-2xl text-amber-500 mb-2"></i>
+                            <h4 class="font-bold text-gray-800 dark:text-gray-100">高亮显示</h4>
+                            <p class="text-xs text-gray-500 mt-1">发生变更的单元格会在表格中高亮显示，一目了然。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 数据验证部分 -->
+                <div class="p-6 border-b border-gray-100 dark:border-gray-700">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-shield-check text-teal-500"></i>
+                        数据验证 <span class="text-xs font-normal bg-teal-600 text-white px-2 py-0.5 rounded ml-2">v3.00 新增</span>
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        数据验证功能允许你为表格数据设置自定义规则，当 AI 更新的数据违反规则时，系统会自动标记并提示修正。
+                    </p>
+
+                    <!-- 功能亮点 -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                            <div class="w-8 h-8 rounded-lg bg-teal-100 dark:bg-teal-900/50 flex items-center justify-center flex-shrink-0 text-teal-600">
+                                <i class="fa-solid fa-list-check"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-gray-900 dark:text-white">多种规则类型</h4>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">表级只读、行数限制、必填、格式验证、枚举验证等</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                            <div class="w-8 h-8 rounded-lg bg-cyan-100 dark:bg-cyan-900/50 flex items-center justify-center flex-shrink-0 text-cyan-600">
+                                <i class="fa-solid fa-link"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-gray-900 dark:text-white">关联验证</h4>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">跨表引用验证，确保数据一致性</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                            <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center flex-shrink-0 text-amber-600">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-gray-900 dark:text-white">智能修改建议</h4>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">根据规则自动提供可能正确的修改选项</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                            <div class="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-900/50 flex items-center justify-center flex-shrink-0 text-rose-600">
+                                <i class="fa-solid fa-shield"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-gray-900 dark:text-white">自动回滚保护</h4>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">开启盾牌图标后违规数据自动回滚</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 图片展示 - 验证面板 -->
+                    <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 mb-6">
+                        <div class="text-center mb-3">
+                            <span class="px-3 py-1 bg-teal-100 dark:bg-teal-900/50 text-teal-800 dark:text-teal-200 text-xs font-bold rounded-full">数据验证面板</span>
+                        </div>
+                        <div class="img-card rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 max-w-5xl mx-auto shadow-lg">
+                            <img src="assets/10-数据验证面板.png" alt="数据验证面板" class="w-full h-auto" loading="lazy">
+                        </div>
+                        <div class="mt-4 max-w-4xl mx-auto">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div class="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <h5 class="font-bold text-gray-800 dark:text-gray-200 mb-1 flex items-center gap-2">
+                                        <i class="fa-solid fa-filter text-teal-500"></i> 模式切换
+                                    </h5>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">通过审核面板右上角的过滤器图标切换到数据验证模式，仅显示违反规则的条目。</p>
+                                </div>
+                                <div class="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <h5 class="font-bold text-gray-800 dark:text-gray-200 mb-1 flex items-center gap-2">
+                                        <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> 违规数据详情
+                                    </h5>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">清晰显示违反的具体规则描述，帮助快速定位问题。</p>
+                                </div>
+                                <div class="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <h5 class="font-bold text-gray-800 dark:text-gray-200 mb-1 flex items-center gap-2">
+                                        <i class="fa-solid fa-lightbulb text-cyan-500"></i> 智能修改
+                                    </h5>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">点击铅笔图标，系统会根据规则提供可能正确的值供你选择。</p>
+                                </div>
+                                <div class="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <h5 class="font-bold text-gray-800 dark:text-gray-200 mb-1 flex items-center gap-2">
+                                        <i class="fa-solid fa-calculator text-rose-500"></i> 违规计数
+                                    </h5>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">导航栏的审核按钮会显示当前违反规则的数据总条数。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 图片展示 - 自定义规则 -->
+                    <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4">
+                        <div class="text-center mb-3">
+                            <span class="px-3 py-1 bg-cyan-100 dark:bg-cyan-900/50 text-cyan-800 dark:text-cyan-200 text-xs font-bold rounded-full">自定义验证规则</span>
+                        </div>
+                        <div class="img-card rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 max-w-5xl mx-auto shadow-lg">
+                            <img src="assets/11-数据验证自定义规则.png" alt="数据验证自定义规则" class="w-full h-auto" loading="lazy">
+                        </div>
+                        <div class="mt-4 max-w-4xl mx-auto">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                <div class="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <h5 class="font-bold text-gray-800 dark:text-gray-200 mb-1 flex items-center gap-2">
+                                        <i class="fa-solid fa-sliders text-indigo-500"></i> 规则预设管理
+                                    </h5>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">支持复制、新建、删除、导入、导出规则预设，以及恢复默认预设。</p>
+                                </div>
+                                <div class="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <h5 class="font-bold text-gray-800 dark:text-gray-200 mb-1 flex items-center gap-2">
+                                        <i class="fa-solid fa-list-check text-purple-500"></i> 规则类型
+                                    </h5>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">表级只读、行数限制、必填、格式验证（正则）、枚举验证、数值范围、关联验证等。</p>
+                                </div>
+                                <div class="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <h5 class="font-bold text-gray-800 dark:text-gray-200 mb-1 flex items-center gap-2">
+                                        <i class="fa-solid fa-shield text-green-500"></i> 自动回滚
+                                    </h5>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">开启盾牌图标后，违反规则的数据更新会被自动回滚。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 规则类型详解 -->
+                <div class="p-6 border-b border-gray-100 dark:border-gray-700">
+                    <h4 class="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-book text-teal-500"></i>
+                        支持的验证规则类型
+                    </h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-gray-200 dark:border-gray-700">
+                                    <th class="text-left py-2 px-3 font-bold text-gray-700 dark:text-gray-300">规则类型</th>
+                                    <th class="text-left py-2 px-3 font-bold text-gray-700 dark:text-gray-300">级别</th>
+                                    <th class="text-left py-2 px-3 font-bold text-gray-700 dark:text-gray-300">说明</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                                <tr>
+                                    <td class="py-2 px-3"><code class="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-xs">表级只读</code></td>
+                                    <td class="py-2 px-3 text-gray-500 dark:text-gray-400">表级</td>
+                                    <td class="py-2 px-3 text-gray-600 dark:text-gray-300">禁止 AI 对该表进行任何修改</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3"><code class="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-xs">行数限制</code></td>
+                                    <td class="py-2 px-3 text-gray-500 dark:text-gray-400">表级</td>
+                                    <td class="py-2 px-3 text-gray-600 dark:text-gray-300">限制表格的最小/最大行数范围</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3"><code class="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-xs">序列递增</code></td>
+                                    <td class="py-2 px-3 text-gray-500 dark:text-gray-400">字段级</td>
+                                    <td class="py-2 px-3 text-gray-600 dark:text-gray-300">编码索引必须严格递增，不可跳号或重复（如：AM0001、0002、0003...）</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3"><code class="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-xs">必填验证</code></td>
+                                    <td class="py-2 px-3 text-gray-500 dark:text-gray-400">字段级</td>
+                                    <td class="py-2 px-3 text-gray-600 dark:text-gray-300">指定字段不能为空</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3"><code class="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-xs">格式验证</code></td>
+                                    <td class="py-2 px-3 text-gray-500 dark:text-gray-400">字段级</td>
+                                    <td class="py-2 px-3 text-gray-600 dark:text-gray-300">使用正则表达式验证字段格式</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3"><code class="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-xs">枚举验证</code></td>
+                                    <td class="py-2 px-3 text-gray-500 dark:text-gray-400">字段级</td>
+                                    <td class="py-2 px-3 text-gray-600 dark:text-gray-300">字段值必须在预设的可选值列表中</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3"><code class="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-xs">数值范围</code></td>
+                                    <td class="py-2 px-3 text-gray-500 dark:text-gray-400">字段级</td>
+                                    <td class="py-2 px-3 text-gray-600 dark:text-gray-300">数值必须在指定的最小/最大范围内</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3"><code class="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-xs">关联验证</code></td>
+                                    <td class="py-2 px-3 text-gray-500 dark:text-gray-400">字段级</td>
+                                    <td class="py-2 px-3 text-gray-600 dark:text-gray-300">字段值必须存在于另一个表的指定列中（如：NPC 所在地点必须是地图表中已有的地点）</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3"><code class="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-xs">键值对验证</code></td>
+                                    <td class="py-2 px-3 text-gray-500 dark:text-gray-400">字段级</td>
+                                    <td class="py-2 px-3 text-gray-600 dark:text-gray-300">验证「键:值」格式的数据，支持数值范围限制（如：属性名:数值）</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 底部提示 -->
+                <div class="p-4">
+                    <div class="flex gap-3 text-sm text-amber-800 dark:text-amber-200 bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4 border border-amber-200 dark:border-amber-700/50">
+                        <i class="fa-solid fa-lightbulb mt-0.5 flex-shrink-0"></i>
+                        <div>
+                            <strong>使用建议：</strong> 审核面板建议保持开启，及时处理 AI 的数据变更。数据验证的默认规则预设已针对同捆表格模板进行了优化；如使用自定义模板，可能需要调整规则的目标表格和目标列设置。关联验证功能特别适合确保 NPC 所在地点、任务关联物品等跨表数据的一致性。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. 可视化表格与互动 -->
+        <section class="mb-16">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-300 font-bold">5</span>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">可视化卡片与锁定</h2>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3">
+                    <!-- 图片区域 - 占据 2/3 宽度 -->
+                    <div class="lg:col-span-2 bg-gray-50 dark:bg-gray-900/50 p-6 flex items-center justify-center">
+                        <div class="img-card rounded-lg overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700 w-full">
+                            <img src="assets\6-可视化卡片.png" alt="可视化表格卡片" class="w-full h-auto" loading="lazy">
+                        </div>
+                    </div>
+
+                    <!-- 功能介绍区域 - 占据 1/3 宽度 -->
+                    <div class="p-6 lg:p-8 flex flex-col justify-center space-y-6 border-t lg:border-t-0 lg:border-l border-gray-100 dark:border-gray-700">
+                        <div>
+                            <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-dice text-indigo-500"></i>快速检定
+                            </h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                所有带有数字的属性字段旁都会渲染一个骰子图标。点击即可快速以该属性发起一次普通检定，无需输入任何指令。
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-lock text-gray-400"></i>数据锁定
+                                <span class="text-xs font-normal bg-gray-500 text-white px-2 py-0.5 rounded">已弃用</span>
+                            </h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                <del>点击任意条目呼出上下文菜单，可锁定整行或单个单元格。</del>
+                                <br>
+                                <span class="text-amber-600 dark:text-amber-400">⚠️ 此功能已不再推荐使用。最新版数据库插件已内置类似的锁定功能，建议直接使用数据库本体的锁定功能。</span>
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-comments text-green-500"></i>交互选项
+                            </h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                卡片底部提供"交谈"、"观察"、"战斗"等快捷按钮，点击即自动发送相应指令。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. 头像与人物关系 -->
+        <section class="mb-16">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 font-bold">6</span>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">头像管理与关系图</h2>
+            </div>
+
+            <!-- 图 7 -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <div class="img-card rounded-lg overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700 mb-6 max-w-4xl mx-auto">
+                    <img src="assets\7-头像管理与关系图.png" alt="头像管理与关系图" class="w-full h-auto">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <h4 class="font-bold text-gray-900 dark:text-white mb-2">头像自定义</h4>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            支持上传本地图片或使用 URL 设置角色头像。支持裁剪调整，让你的角色列表和关系图更加美观。
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-900 dark:text-white mb-2">别名系统</h4>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            为角色设置别名（如“祥子, sakiko”），系统会自动合并同一角色的不同称呼，共享头像与关系节点。
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-900 dark:text-white mb-2">配置分享</h4>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            支持导入/导出头像配置文件。通过“智能合并”功能，可以轻松整合社区分享的头像包。你可以尝试导入同捆的<code class="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 px-1 rounded text-xs text-pink-600 dark:text-pink-400">头像管理示例.json</code>来体验这一功能
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. 表格命名规则 -->
+        <section class="mb-16">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold">7</span>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">数据表识别规则</h2>
+            </div>
+
+            <div class="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    插件通过<strong>模糊匹配</strong>识别表格。只要表名或列名包含以下关键词即可生效：
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs font-mono">
+                    <!-- 全局数据表 -->
+                    <div class="p-3 bg-white dark:bg-gray-800 rounded shadow-sm">
+                        <strong class="text-slate-600 dark:text-slate-400 block mb-1">全局数据表</strong>
+                        <div class="text-gray-600 dark:text-gray-400">
+                            <div class="mb-1"><span class="text-slate-500">表名:</span> 全局数据表, 全局数据, 全局</div>
+                            <div><span class="text-slate-500">列名:</span> 当前详细地点, 当前次要地区</div>
+                        </div>
+                    </div>
+
+                    <!-- 主角表 -->
+                    <div class="p-3 bg-white dark:bg-gray-800 rounded shadow-sm">
+                        <strong class="text-indigo-600 dark:text-indigo-400 block mb-1">主角表</strong>
+                        <div class="text-gray-600 dark:text-gray-400">
+                            <div class="mb-1"><span class="text-slate-500">表名:</span> 主角, 玩家, user, &lt;user&gt;, player</div>
+                            <div><span class="text-slate-500">列名:</span> 姓名, 自身状态, 所在地点，基础属性, 特有属性，资源数据</div>
+                        </div>
+                    </div>
+
+                    <!-- NPC 表 -->
+                    <div class="p-3 bg-white dark:bg-gray-800 rounded shadow-sm">
+                        <strong class="text-purple-600 dark:text-purple-400 block mb-1">NPC / 人物表</strong>
+                        <div class="text-gray-600 dark:text-gray-400">
+                            <div class="mb-1"><span class="text-slate-500">表名:</span> 人物, NPC, 角色, 弟子, 成员, 队友, 伙伴, 宠物, 灵宠</div>
+                            <div><span class="text-slate-500">列名:</span> 姓名, 基础属性，特有属性，所在地点, 在场状态，交互选项</div>
+                        </div>
+                    </div>
+
+                    <!-- 地点表 -->
+                    <div class="p-3 bg-white dark:bg-gray-800 rounded shadow-sm">
+                        <strong class="text-green-600 dark:text-green-400 block mb-1">地点 / 场景表</strong>
+                        <div class="text-gray-600 dark:text-gray-400">
+                            <div class="mb-1"><span class="text-slate-500">表名:</span> 地图, 地点, 场景, 区域, 秘境, 副本, 洞府, 空间, 位面, 界域</div>
+                            <div><span class="text-slate-500">列名:</span> 详细地点, 次要地区</div>
+                        </div>
+                    </div>
+
+                    <!-- 地图元素表 -->
+                    <div class="p-3 bg-white dark:bg-gray-800 rounded shadow-sm">
+                        <strong class="text-emerald-600 dark:text-emerald-400 block mb-1">地图元素表</strong>
+                        <div class="text-gray-600 dark:text-gray-400">
+                            <div class="mb-1"><span class="text-slate-500">表名:</span> 地图元素, 元素</div>
+                            <div><span class="text-slate-500">列名:</span> 元素名称, 所在地点, 交互选项</div>
+                        </div>
+                    </div>
+
+                    <!-- 任务表 -->
+                    <div class="p-3 bg-white dark:bg-gray-800 rounded shadow-sm">
+                        <strong class="text-red-600 dark:text-red-400 block mb-1">任务 / 备忘表</strong>
+                        <div class="text-gray-600 dark:text-gray-400">
+                            <div class="mb-1"><span class="text-slate-500">表名:</span> 任务, 备忘事项, 目标, 待办, 主线, 支线, 委托, 悬赏</div>
+                            <div><span class="text-slate-500">列名:</span> 名称, 类型, 优先级，进度, 状态</div>
+                        </div>
+                    </div>
+
+                    <!-- 物品/背包表 -->
+                    <div class="p-3 bg-white dark:bg-gray-800 rounded shadow-sm">
+                        <strong class="text-amber-600 dark:text-amber-400 block mb-1">物品 / 背包表</strong>
+                        <div class="text-gray-600 dark:text-gray-400">
+                            <div class="mb-1"><span class="text-slate-500">表名:</span> 背包, 物品, 道具, 库存, 储物袋, 空间戒指</div>
+                            <div><span class="text-slate-500">列名:</span> 物品名称</div>
+                        </div>
+                    </div>
+
+                    <!-- 技能表 -->
+                    <div class="p-3 bg-white dark:bg-gray-800 rounded shadow-sm">
+                        <strong class="text-blue-600 dark:text-blue-400 block mb-1">技能 / 能力表</strong>
+                        <div class="text-gray-600 dark:text-gray-400">
+                            <div class="mb-1"><span class="text-slate-500">表名:</span> 技能, 能力, 魔法, 异能, 神通, 道法, 功法, 血脉, 天赋, 义体改造, 词条</div>
+                            <div><span class="text-slate-500">列名:</span> 技能名称, 熟练度</div>
+                        </div>
+                    </div>
+
+                    <!-- 装备表 -->
+                    <div class="p-3 bg-white dark:bg-gray-800 rounded shadow-sm">
+                        <strong class="text-cyan-600 dark:text-cyan-400 block mb-1">装备表</strong>
+                        <div class="text-gray-600 dark:text-gray-400">
+                            <div class="mb-1"><span class="text-slate-500">表名:</span> 装备, 武器, 防具, 法宝, 灵器, 仙器, 神器, 义体, 神装</div>
+                            <div><span class="text-slate-500">列名:</span> 装备名称，状态</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/50 rounded-lg p-3">
+                    <p class="text-blue-700 dark:text-blue-300 text-sm flex items-start gap-2">
+                        <i class="fa-solid fa-circle-info mt-0.5"></i>
+                        <span><strong>提示：</strong>关键词匹配支持包含关系，例如表名为"主角技能表"会同时匹配"主角"和"技能"两类规则。列名匹配同理。</span>
+                    </p>
+                </div>
+            </div>
+        </section>
+        <!-- 8. 表格设置 -->
+        <section id="section-settings" class="mb-16">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold">8</span>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">表格设置与个性化</h2>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                <!-- 功能介绍区域 -->
+                <div class="p-6 border-b border-gray-100 dark:border-gray-700">
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        点击导航栏右侧的 <i class="fa-solid fa-gear text-gray-500"></i> 齿轮图标，即可进入插件的主设置页面。在这里你可以自定义外观、调整布局、管理表格显示等。
+                    </p>
+
+                    <!-- 功能列表 -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                            <div class="w-8 h-8 rounded-lg bg-cyan-100 dark:bg-cyan-900/50 flex items-center justify-center flex-shrink-0 text-cyan-600">
+                                <i class="fa-solid fa-palette"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-gray-900 dark:text-white">外观样式</h4>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">更改主题颜色、字体、字体大小等视觉设置</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                            <div class="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center flex-shrink-0 text-violet-600">
+                                <i class="fa-solid fa-table-columns"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-gray-900 dark:text-white">布局设置</h4>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">调整卡片宽度、布局模式、每页显示条数等</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                            <div class="w-8 h-8 rounded-lg bg-teal-100 dark:bg-teal-900/50 flex items-center justify-center flex-shrink-0 text-teal-600">
+                                <i class="fa-solid fa-arrows-up-down"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-gray-900 dark:text-white">位置与交互</h4>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">设置面板位置、功能按钮位置、收起样式等</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                            <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center flex-shrink-0 text-amber-600">
+                                <i class="fa-solid fa-list-check"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-gray-900 dark:text-white">表格管理</h4>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">显示/隐藏表格，拖拽调整导航栏顺序</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 图片展示区域 -->
+                <div class="p-6 bg-gray-50 dark:bg-gray-900/50">
+                    <div class="text-center mb-3">
+                        <span class="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-full">设置面板总览</span>
+                    </div>
+                    <div class="img-card rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 max-w-5xl mx-auto">
+                        <img src="assets/9-表格设置.png" alt="表格设置面板" class="w-full h-auto" loading="lazy">
+                    </div>
+                </div>
+
+                <!-- 详细说明区域 -->
+                <div class="p-6 border-t border-gray-100 dark:border-gray-700">
+                    <h4 class="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-question text-blue-500"></i>
+                        常用设置说明
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                            <h5 class="font-bold text-sm text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-eye text-cyan-500"></i>
+                                显示 / 隐藏表格
+                            </h5>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">
+                                在「表格管理」中，点击每个表格前的 <i class="fa-solid fa-eye text-xs"></i> 眼睛图标来显示或隐藏特定表格。<strong>推荐隐藏"选项表"</strong>以获得更清爽的界面。
+                            </p>
+                        </div>
+                        <div class="p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                            <h5 class="font-bold text-sm text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-grip-vertical text-violet-500"></i>
+                                排序页面
+                            </h5>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">
+                                在「表格管理」中，<strong>长按拖拽</strong>表格或功能项右侧的把手，可以调整它们在导航栏中的出现顺序。
+                            </p>
+                        </div>
+                        <div class="p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                            <h5 class="font-bold text-sm text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-hand-pointer text-teal-500"></i>
+                                行动选项
+                            </h5>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">
+                                设置是否读取选项表中的内容作为快捷指令显示在聊天中，以及点击选项后是否直接发送给 AI。
+                            </p>
+                        </div>
+                        <div class="p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                            <h5 class="font-bold text-sm text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-expand text-amber-500"></i>
+                                布局模式
+                            </h5>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">
+                                在「布局设置」中选择「竖向滚动」或其他模式，调整卡片宽度和每页显示条数，打造最适合你的浏览体验。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 底部提示 -->
+                <div class="p-4 border-t border-gray-100 dark:border-gray-700">
+                    <div class="flex gap-3 text-sm text-blue-800 dark:text-blue-200 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700/50">
+                        <i class="fa-solid fa-lightbulb mt-0.5 flex-shrink-0"></i>
+                        <div>
+                            <strong>小贴士：</strong>所有设置会自动保存到本地存储，刷新页面后依然生效。如果需要重置所有设置，可以在浏览器控制台执行 <code class="bg-blue-100 dark:bg-blue-800 px-1 rounded text-xs">localStorage.clear()</code> 命令。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- 9. FAQ (Keep Existing) -->
+<!-- 8. 手动修改属性与模板 -->
+<section id="section-manual-edit" class="mb-16">
+    <div class="flex items-center gap-3 mb-6">
+        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-300 font-bold">9</span>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">手动修改属性与模板</h2>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <!-- 修改属性 -->
+        <div class="p-6 border-b border-gray-100 dark:border-gray-700">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-pen-to-square text-orange-500"></i>
+                修改角色属性
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                当你需要手动调整主角或 NPC 的属性值时，按以下步骤操作：
+            </p>
+
+            <div class="space-y-3">
+                <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center text-sm font-bold">1</span>
+                    <div>
+                        <span class="font-medium text-gray-800 dark:text-gray-200">打开对应表格</span>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">在导航栏中点击「主角信息」或「重要人物」表。</p>
+                    </div>
+                </div>
+                <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center text-sm font-bold">2</span>
+                    <div>
+                        <span class="font-medium text-gray-800 dark:text-gray-200">点击角色卡片的属性栏</span>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">找到你想修改的角色，点击其属性区域（如「基础属性」或「特殊属性」）。</p>
+                    </div>
+                </div>
+                <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center text-sm font-bold">3</span>
+                    <div>
+                        <span class="font-medium text-gray-800 dark:text-gray-200">点击编辑按钮，输入新属性值</span>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            使用标准格式：力量:60;敏捷:70;智力:55，多个属性用分号分隔。
+                        </p>
+                    </div>
+                </div>
+                <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center text-sm font-bold">4</span>
+                    <div>
+                        <span class="font-medium text-gray-800 dark:text-gray-200">保存并锁定（推荐）</span>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">保存后，再次点击该属性条目，选择「锁定」。锁定后 AI 无法修改该值，保障你的手动设置不被覆盖。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700/50">
+                <p class="text-sm text-blue-800 dark:text-blue-200 flex items-start gap-2">
+                    <i class="fa-solid fa-circle-info mt-0.5 flex-shrink-0"></i>
+                    <span><strong>COC 技能示例：</strong>侦查:60;聆听:50;图书馆使用:50;斗殴:50;闪避:35</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- 修改模板 -->
+        <div class="p-6">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-file-pen text-purple-500"></i>
+                修改表格模板
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                如果你需要调整表格结构（增删列、修改提示词等），可以通过数据库插件的编辑器进行：
+            </p>
+
+            <div class="bg-slate-100 dark:bg-slate-700/50 rounded-lg p-4">
+                <p class="text-sm text-gray-600 dark:text-gray-300 font-mono leading-relaxed mb-3">
+                    <span class="text-gray-400">路径：</span>
+                    酒馆左下角 <i class="fa-solid fa-wand-magic-sparkles text-purple-500 mx-1"></i> 魔术棒
+                    <i class="fa-solid fa-chevron-right text-gray-400 mx-1"></i> 数据库
+                    <i class="fa-solid fa-chevron-right text-gray-400 mx-1"></i> 左侧数据管理页
+                    <i class="fa-solid fa-chevron-right text-gray-400 mx-1"></i> 打开可视化表格编辑器
+                </p>
+                <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                    <li class="flex items-start gap-2">
+                        <i class="fa-solid fa-check text-green-500 mt-1 flex-shrink-0"></i>
+                        <span>在编辑器中可以修改表名、列名、提示词（note 字段）等</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i class="fa-solid fa-check text-green-500 mt-1 flex-shrink-0"></i>
+                        <span>修改后点击保存，仅影响当前聊天，不影响其他聊天</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-1 flex-shrink-0"></i>
+                        <span>修改表名或列名可能导致可视化插件无法识别，请参考「数据表识别规则」章节</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 9. 自定义交互规则 -->
+<section class="mb-16">
+    <div class="flex items-center gap-3 mb-6">
+        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-300 font-bold">9</span>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">自定义交互规则</h2>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2">
+            <!-- 图片区域 -->
+            <div class="bg-gray-50 dark:bg-gray-900/50 p-6 flex items-center justify-center">
+                <div class="img-card rounded-lg overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700 w-full">
+                    <img src="assets\自定义交互规则管理.png" alt="自定义交互规则管理" class="w-full h-auto" loading="lazy">
+                </div>
+            </div>
+
+            <!-- 功能介绍区域 -->
+            <div class="p-6 lg:p-8 flex flex-col justify-center space-y-5 border-t lg:border-t-0 lg:border-l border-gray-100 dark:border-gray-700">
+                <div>
+                    <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-orange-500"></i>什么是交互规则？
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        交互规则允许你自定义卡片底部的快捷按钮。当表名匹配指定关键词时，系统会自动在对应卡片上显示预设的交互按钮（如"前往"、"探索"等）。
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-code text-purple-500"></i>JSON 配置
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        通过 JSON 配置定义规则：
+                    </p>
+                    <ul class="text-sm text-gray-500 dark:text-gray-400 mt-2 space-y-1 ml-4">
+                        <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded text-xs">table_keywords</code> - 匹配的表名关键词（如"地点"、"世界"）</li>
+                        <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded text-xs">actions</code> - 定义按钮标签（如"前往"、"探索"）</li>
+                        <li><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded text-xs">template</code> - 提示词模板，支持 <code class="text-pink-500">{Name}（表格第一列列名）</code> 等变量替换</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-gears text-blue-500"></i>管理功能
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        支持规则的新建、导入、导出、克隆和删除。可单独开关特定规则。
+                    </p>
+                </div>
+
+                <div class="bg-slate-100 dark:bg-slate-700/50 rounded-lg p-3">
+                    <p class="text-xs text-gray-600 dark:text-gray-300 font-mono">
+                        <span class="text-gray-400">路径：</span>
+                        设置 <i class="fa-solid fa-chevron-right text-gray-400 mx-1"></i> 高级设置 <i class="fa-solid fa-chevron-right text-gray-400 mx-1"></i> 自定义交互规则
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 10. 变量面板 -->
+<section class="mb-16">
+    <div class="flex items-center gap-3 mb-6">
+        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900 text-violet-600 dark:text-violet-300 font-bold">10</span>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">变量面板</h2>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <!-- 变量模板介绍 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2">
+            <!-- 图片区域 -->
+            <div class="bg-gray-50 dark:bg-gray-900/50 p-6 flex items-center justify-center">
+                <div class="img-card rounded-lg overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700 w-full">
+                    <img src="assets\变量1.png" alt="变量面板界面" class="w-full h-auto" loading="lazy">
+                </div>
+            </div>
+
+            <!-- 功能介绍区域 -->
+            <div class="p-6 lg:p-8 flex flex-col justify-center space-y-5 border-t lg:border-t-0 lg:border-l border-gray-100 dark:border-gray-700">
+                <div>
+                    <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-violet-500"></i>变量模板
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        在底部标签栏点击"变量"即可打开变量面板，支持 MVU 与 ERA 两种变量格式。点击任一变量可进入编辑弹窗，手动修改数值并保存。
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-dice text-indigo-500"></i>快捷检定
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        对于包含数值的变量，点击变量右侧的骰子图标可直接进行快捷检定。
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-filter text-cyan-500"></i>数值过滤模式
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        点击漏斗图标进入数值模式，系统会过滤掉数值为0以及处于黑名单中的变量，仅显示有意义的数值项。
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-sitemap text-green-500"></i>层级简化
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        通过"显示层级"开关简化复杂的变量路径。例如关闭某层级后，"角色列表 > 索拉里奥 > 熟练加值"可简化为"索拉里奥 > 熟练加值"。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 过滤黑名单 -->
+        <div class="border-t border-gray-100 dark:border-gray-700">
+            <div class="grid grid-cols-1 lg:grid-cols-2">
+                <!-- 功能介绍区域 -->
+                <div class="p-6 lg:p-8 flex flex-col justify-center space-y-5 order-2 lg:order-1">
+                    <div>
+                        <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-ban text-red-500"></i>变量过滤黑名单
+                        </h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            通过设置黑名单关键词，过滤掉不需要进行快捷检定的变量。即使变量值中包含数值，只要变量名命中黑名单，系统就不会显示骰子图标。
+                        </p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-list text-amber-500"></i>默认过滤词
+                        </h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            系统预设了常用的过滤词，如：时间、日期、备注、头像、进度、编码、ID、年龄、三围等。可通过管理界面自定义添加或重置。
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-100 dark:bg-slate-700/50 rounded-lg p-3">
+                        <p class="text-xs text-gray-600 dark:text-gray-300 font-mono">
+                            <span class="text-gray-400">路径：</span>
+                            设置 <i class="fa-solid fa-chevron-right text-gray-400 mx-1"></i> 高级设置 <i class="fa-solid fa-chevron-right text-gray-400 mx-1"></i> 变量过滤黑名单 <i class="fa-solid fa-chevron-right text-gray-400 mx-1"></i> 管理
+                        </p>
+                    </div>
+
+                    <div class="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 border border-amber-200 dark:border-amber-700/50">
+                        <p class="text-xs text-amber-700 dark:text-amber-300 flex items-start gap-2">
+                            <i class="fa-solid fa-lightbulb mt-0.5 flex-shrink-0"></i>
+                            <span><strong>示例：</strong>"头像"变量的值可能是 <code class="bg-amber-100 dark:bg-amber-800 px-1 rounded">image_2026-01-05.png</code>，因文件名包含数字，系统默认会尝试添加骰子图标。将"头像"加入黑名单后可避免此问题。</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 图片区域 -->
+                <div class="bg-gray-50 dark:bg-gray-900/50 p-6 flex items-center justify-center order-1 lg:order-2 border-b lg:border-b-0 lg:border-l border-gray-100 dark:border-gray-700">
+                    <div class="img-card rounded-lg overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700 w-full">
+                        <img src="assets\变量2.png" alt="变量过滤黑名单设置" class="w-full h-auto" loading="lazy">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 11. 正则转换规则 -->
+<section class="mb-16">
+    <div class="flex items-center gap-3 mb-6">
+        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-teal-100 dark:bg-teal-900 text-teal-600 dark:text-teal-300 font-bold">11</span>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">正则转换规则</h2>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2">
+            <!-- 图片区域 -->
+            <div class="bg-gray-50 dark:bg-gray-900/50 p-6 flex items-center justify-center">
+                <div class="img-card rounded-lg overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700 w-full">
+                    <img src="assets\正则转换规则.png" alt="正则转换规则管理" class="w-full h-auto" loading="lazy">
+                </div>
+            </div>
+
+            <!-- 功能介绍区域 -->
+            <div class="p-6 lg:p-8 flex flex-col justify-center space-y-5 border-t lg:border-t-0 lg:border-l border-gray-100 dark:border-gray-700">
+                <div>
+                    <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-teal-500"></i>什么是正则转换规则？
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        设置正则转换规则后，系统会自动修改数据库表格中所有匹配的数据。适用于批量清理AI生成的八股内容、统一格式等场景。
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-code text-purple-500"></i>编辑规则
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        正则转换规则使用标准的 JavaScript 正则表达式语法。可配置：
+                    </p>
+                    <ul class="text-sm text-gray-500 dark:text-gray-400 mt-2 space-y-1 ml-4">
+                        <li><strong>规则名称/描述</strong> - 便于识别规则用途</li>
+                        <li><strong>匹配模式</strong> - 正则表达式模式</li>
+                        <li><strong>替换内容</strong> - 留空表示删除，可使用 <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded text-xs">$1</code>、<code class="bg-gray-100 dark:bg-gray-700 px-1 rounded text-xs">$2</code> 引用捕获组</li>
+                        <li><strong>作用范围</strong> - 全局或指定表格</li>
+                        <li><strong>优先级</strong> - 数值越大优先级越高，处理顺序越靠前</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-folder-open text-blue-500"></i>预设管理
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        支持克隆、新建、删除、导入、导出预设。点击旋转箭头可恢复默认预设。默认预设会在脚本内置预设更新时自动同步。
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-file-import text-amber-500"></i>导入酒馆正则
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        可直接导入酒馆格式的正则规则，无需手动转换。
+                    </p>
+                </div>
+
+                <div class="bg-slate-100 dark:bg-slate-700/50 rounded-lg p-3">
+                    <p class="text-xs text-gray-600 dark:text-gray-300 font-mono">
+                        <span class="text-gray-400">路径：</span>
+                        设置 <i class="fa-solid fa-chevron-right text-gray-400 mx-1"></i> 正则转换规则
+                    </p>
+                </div>
+
+                <div class="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 border border-amber-200 dark:border-amber-700/50">
+                    <p class="text-xs text-amber-700 dark:text-amber-300 flex items-start gap-2">
+                        <i class="fa-solid fa-triangle-exclamation mt-0.5 flex-shrink-0"></i>
+                        <span><strong>注意：</strong>除非特别规定，默认开启g模式替换所有匹配项。过于复杂的正则可能因处理超时而导致失败，请尽量使用简单的、最低限度的正则。</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 12. 地图模块 -->
+<section class="mb-16">
+    <div class="flex items-center gap-3 mb-6">
+        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-300 font-bold">12</span>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">地图模块</h2>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <!-- 图片区域 - 全宽 -->
+        <div class="bg-gray-50 dark:bg-gray-900/50 p-6">
+            <div class="img-card rounded-lg overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700 max-w-5xl mx-auto">
+                <img src="assets\地图模块.png" alt="地图模块界面" class="w-full h-auto" loading="lazy">
+            </div>
+        </div>
+
+        <!-- 功能介绍区域 -->
+        <div class="p-6 border-t border-gray-100 dark:border-gray-700">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div>
+                    <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-door-open text-emerald-500"></i>地图入口
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        通过仪表盘，或世界地图点、地图元素表等处的地图图标进入地图模块。
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-tags text-blue-500"></i>切换次要地点标签
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        点击不同的标签来切换次要地点。此数据依赖于「世界地图点」与「地图元素」表的数据结构。
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-crosshairs text-red-500"></i>回到当前位置
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        点击时返回主角的当前位置，快速定位。
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-location-dot text-purple-500"></i>当前详细地点
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        点击当前详细地点的图标来唤出对应的表格可视化卡片，查看地点详情。
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-grip text-cyan-500"></i>详细地点网格
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        显示当前选中的次要地点中的所有详细地点。例如「监牢洋馆」被选中时，其中包含10个详细地点。
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-users text-amber-500"></i>互动元素
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        显示当前选中的主要地点中的互动元素以及数量。互动元素包括位于此处的角色以及地图元素。点击人物头像或互动元素名，呼出对应的表格可视化卡片。
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-6 bg-slate-100 dark:bg-slate-700/50 rounded-lg p-4">
+                <p class="text-sm text-gray-600 dark:text-gray-300">
+                    <i class="fa-solid fa-circle-info text-blue-500 mr-2"></i>
+                    <strong>提示：</strong>地图模块的数据来源于「世界地图点」和「地图元素」两张表格。确保表格模板正确导入后，地图才能正常显示。
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 13. 收藏夹面板 -->
+<section class="mb-16">
+    <div class="flex items-center gap-3 mb-6">
+        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900 text-amber-600 dark:text-amber-300 font-bold">13</span>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">收藏夹面板</h2>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2">
+            <!-- 图片区域 -->
+            <div class="bg-gray-50 dark:bg-gray-900/50 p-6 flex items-center justify-center">
+                <div class="img-card rounded-lg overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700 w-full">
+                    <img src="assets\收藏面板.png" alt="收藏夹面板" class="w-full h-auto" loading="lazy">
+                </div>
+            </div>
+
+            <!-- 功能介绍区域 -->
+            <div class="p-6 lg:p-8 flex flex-col justify-center space-y-5 border-t lg:border-t-0 lg:border-l border-gray-100 dark:border-gray-700">
+                <div>
+                    <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-bookmark text-amber-500"></i>收藏卡片
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        你可以在表格面板中收藏任一卡片，实现跨聊天、跨角色卡的卡片收藏。右键点击卡片选择「收藏此行」即可添加到收藏夹。
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-tags text-blue-500"></i>卡片标签
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        为收藏的卡片设置标签，便于搜索和过滤。多个标签用逗号分隔，留空则无标签。
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-filter text-purple-500"></i>卡片标签过滤
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        在收藏夹面板中，可以开启或关闭特定标签的卡片显示，快速筛选需要的内容。
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-paper-plane text-green-500"></i>发送卡片到当前表格
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        将收藏的卡片发送到当前聊天的当前表格中。插件会智能推荐表格结构相似的目标表格，显示匹配程度（完全匹配/部分匹配）和未匹配的列。
+                    </p>
+                </div>
+
+                <div class="bg-slate-100 dark:bg-slate-700/50 rounded-lg p-3">
+                    <p class="text-xs text-gray-600 dark:text-gray-300 font-mono">
+                        <span class="text-gray-400">入口：</span>
+                        底部导航栏 <i class="fa-solid fa-chevron-right text-gray-400 mx-1"></i> 收藏夹
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 14. FAQ -->
+<section id="section-faq" class="mb-16">
+    <div class="flex items-center gap-3 mb-6">
+        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-rose-100 dark:bg-rose-900 text-rose-600 dark:text-rose-300 font-bold">10</span>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">常见问题 (FAQ)</h2>
+    </div>
+
+    <div class="space-y-6">
+        <!-- 分类一：安装与更新 -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div class="bg-blue-50 dark:bg-blue-900/30 px-6 py-3 border-b border-gray-100 dark:border-gray-700">
+                <h3 class="font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                    <i class="fa-solid fa-download text-blue-500"></i>
+                    安装与更新
+                </h3>
+            </div>
+            <div class="divide-y divide-gray-100 dark:divide-gray-700">
+                <!-- Q1 -->
+                <div class="p-5">
+                    <h4 class="font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <span class="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded">Q1</span>
+                        安装后没反应 / 面板打不开怎么办？
+                    </h4>
+                    <div class="text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                        <p>请依次检查以下几点：</p>
+                        <ul class="space-y-1 ml-4">
+                            <li class="flex items-start gap-2">
+                                <span class="text-blue-500 font-bold">1.</span>
+                                <span><strong>刷新页面：</strong>导入脚本后务必刷新页面 (F5)，否则插件无法初始化。</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-blue-500 font-bold">2.</span>
+                                <span><strong>排查插件冲突：</strong>本插件与星火佬的「可视化表格」脚本不兼容，请二选一。与「浮岛」可以共存。</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-blue-500 font-bold">3.</span>
+                                <span>如仍有问题，尝试在酒馆助手中禁用其他脚本后重试。</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Q2 -->
+                <div class="p-5">
+                    <h4 class="font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <span class="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded">Q2</span>
+                        怎么更新脚本？怎么知道是否成功更新？
+                    </h4>
+                    <div class="text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                        <p>脚本支持<strong>自动更新</strong>。只要你使用的是主贴首楼的脚本，就不会有无法更新的问题。</p>
+                        <ul class="space-y-1 ml-4">
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-green-500 mt-1 flex-shrink-0"></i>
+                                <span>打开设置界面，查看左上角的版本号是否为最新版本</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-sync text-blue-500 mt-1 flex-shrink-0"></i>
+                                <span>点击版本号右侧的<strong>旋转箭头</strong>可手动触发更新</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-1 flex-shrink-0"></i>
+                                <span>如果无法自动更新，请检查是否使用最新版酒馆与酒馆助手，以及是否存在网络问题</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Q3 -->
+                <div class="p-5">
+                    <h4 class="font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <span class="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded">Q3</span>
+                        更新脚本或模板会影响旧聊天吗？
+                    </h4>
+                    <div class="text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                        <ul class="space-y-2">
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-file-code text-purple-500 mt-1 flex-shrink-0"></i>
+                                <span><strong>更新脚本：</strong>直接在酒馆助手中导入新版本，删除旧版本即可，刷新页面后生效。不影响任何聊天数据。</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-table text-green-500 mt-1 flex-shrink-0"></i>
+                                <span><strong>更新模板：</strong>按「安装前准备」中的步骤操作（删除当前标识数据 → 导入新模板）。此操作<strong>仅影响当前聊天</strong>，旧聊天的数据和模板不受影响。</span>
+                            </li>
+                        </ul>
+                        <p class="text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-100 dark:border-gray-700">
+                            建议在新聊天中使用新模板，旧聊天可保持原状。
+                        </p>
+                    </div>
+                </div>
+                <!-- Q4 -->
+                <div class="p-5">
+                    <h4 class="font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <span class="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded">Q4</span>
+                        面板每次刷新都会多出莫名其妙的条目？
+                    </h4>
+                    <div class="text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                        <p>这是老版本表格锁定功能的遗留 Bug，已在最新版本中修复。</p>
+                        <div class="bg-slate-100 dark:bg-slate-800 rounded-lg p-3">
+                            <p class="text-xs text-slate-600 dark:text-slate-400 mb-2">按 F12 打开浏览器控制台，输入以下命令并回车：</p>
+                            <code class="text-sm text-green-600 dark:text-green-400 font-mono select-all">localStorage.clear()</code>
+                        </div>
+                        <p>执行后更新到最新版脚本，刷新页面即可。此命令会清除本站点的本地设置（如主题偏好），但不影响聊天记录。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分类二：兼容性 -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div class="bg-purple-50 dark:bg-purple-900/30 px-6 py-3 border-b border-gray-100 dark:border-gray-700">
+                <h3 class="font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                    <i class="fa-solid fa-puzzle-piece text-purple-500"></i>
+                    兼容性
+                </h3>
+            </div>
+            <div class="divide-y divide-gray-100 dark:divide-gray-700">
+                <!-- Q4 -->
+                <div class="p-5">
+                    <h4 class="font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <span class="bg-purple-500 text-white text-xs font-bold px-2 py-0.5 rounded">Q4</span>
+                        必须使用同捆的表格模板吗？
+                    </h4>
+                    <div class="text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                        <p><strong>基础功能</strong>（表格可视化、投骰检定、数据审核、单元格编辑）对绝大多数模板都是通用的。</p>
+                        <p>但以下功能需要同捆模板或自行适配列名规则：</p>
+                        <ul class="ml-4 space-y-1">
+                            <li>• 仪表盘完整展示（主角属性、地点列表等）</li>
+                            <li>• 人物关系图谱</li>
+                        </ul>
+                        <p class="text-gray-500 dark:text-gray-400">参考「数据表识别规则」章节了解列名匹配规则。</p>
+                    </div>
+                </div>
+                <!-- Q5 -->
+                <div class="p-5">
+                    <h4 class="font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <span class="bg-purple-500 text-white text-xs font-bold px-2 py-0.5 rounded">Q5</span>
+                        MVU 卡的变量和数据库数值冲突了怎么办？
+                    </h4>
+                    <div class="text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                        <p>这是让 AI 执行两次相似任务导致的偏差，例如角色卡显示 100 金币，数据库却记录了 1000 金币。</p>
+                        <p><strong>建议做法：</strong></p>
+                        <ul class="ml-4 space-y-1">
+                            <li>• 开局时在数据库中手动对齐一次数值（参考上方「手动修改属性」）</li>
+                            <li>• 不锁定，观察后续能否正确同步</li>
+                            <li>• 如持续冲突，可考虑在数据库模板中删除对应表/列，只保留一套数据源</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Q6 -->
+                <div class="p-5">
+                    <h4 class="font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <span class="bg-purple-500 text-white text-xs font-bold px-2 py-0.5 rounded">Q6</span>
+                        报错「未找到人际关系列」怎么办？
+                    </h4>
+                    <div class="text-sm text-gray-600 dark:text-gray-300">
+                        <p>你使用的表格模板没有包含「人际关系」相关的列，或列名不符合抓取规则。</p>
+                        <p class="mt-2"><strong>解决方案：</strong>确认「重要人物表」中存在列名包含「人际」或「关系」的列；或使用同捆模板。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分类三：功能模块化 -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div class="bg-green-50 dark:bg-green-900/30 px-6 py-3 border-b border-gray-100 dark:border-gray-700">
+                <h3 class="font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                    <i class="fa-solid fa-cubes text-green-500"></i>
+                    功能模块化
+                </h3>
+            </div>
+            <div class="divide-y divide-gray-100 dark:divide-gray-700">
+                <!-- Q7 -->
+                <div class="p-5">
+                    <h4 class="font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <span class="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded">Q7</span>
+                        可以只用可视化，不用投骰功能吗？
+                    </h4>
+                    <div class="text-sm text-gray-600 dark:text-gray-300">
+                        <p><strong>完全可以。</strong>本插件的各项功能是模块化的。你可以只使用表格可视化、卡片展示、数据锁定等功能，而完全忽略投骰系统。</p>
+                    </div>
+                </div>
+                <!-- Q8 -->
+                <div class="p-5">
+                    <h4 class="font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <span class="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded">Q8</span>
+                        可以只用投骰，不用数据库吗？
+                    </h4>
+                    <div class="text-sm text-gray-600 dark:text-gray-300">
+                        <p><strong>完全可以。</strong>投骰功能独立运行，不依赖数据库插件。你可以手动输入属性名和数值进行检定。</p>
+                    </div>
+                </div>
+                <!-- Q9 -->
+                <div class="p-5">
+                    <h4 class="font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <span class="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded">Q9</span>
+                        需要修改预设、增加世界书条目或修改数据库的剧情推进提示词吗？
+                    </h4>
+                    <div class="text-sm text-gray-600 dark:text-gray-300">
+                        <p><strong>不需要。</strong>AI 的知识库足以理解投骰检定机制。</p>
+                        <p class="mt-2 text-gray-500 dark:text-gray-400">反而<strong>不建议</strong>在世界书或预设中额外解释投骰规则——这容易导致「投骰子」这个元叙事要素不当地闯入正文，或触发八股化的剧情描写。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分类四：规则与自定义 -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div class="bg-amber-50 dark:bg-amber-900/30 px-6 py-3 border-b border-gray-100 dark:border-gray-700">
+                <h3 class="font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-amber-500"></i>
+                    规则与自定义
+                </h3>
+            </div>
+            <div class="divide-y divide-gray-100 dark:divide-gray-700">
+                <!-- Q10 -->
+                <div class="p-5">
+                    <h4 class="font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <span class="bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded">Q10</span>
+                        可以使用 DND [1-20] 属性规则吗？不支持完整规则？
+                    </h4>
+                    <div class="text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                        <p><strong>可以自定义属性范围和骰子面数。</strong>投骰面板支持 1d20、1d100 等多种骰型。</p>
+                        <p>本系统不做完整 TRPG 规则（奖励骰、AC、先攻等），因为 AIRP 中不存在严谨的数值体系。但你可以手动近似实现：</p>
+                        <ul class="ml-4 space-y-1">
+                            <li>• <strong>奖励骰：</strong>投两次，选你喜欢的结果</li>
+                            <li>• <strong>修正值：</strong>在投骰面板中手动输入</li>
+                            <li>• <strong>先攻：</strong>为相关角色各投一次敏捷检定，比较结果</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Q11 -->
+                <div class="p-5">
+                    <h4 class="font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <span class="bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded">Q11</span>
+                        高魔/修仙世界观中属性都是 90+，数值不平衡怎么办？
+                    </h4>
+                    <div class="text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                        <p>最新版表格模板会尽量根据世界观动态赋值，但如果角色设定本身就非常夸张（如「战神」「天帝」），AI 仍可能给出极高数值。</p>
+                        <p><strong>建议做法：</strong></p>
+                        <ul class="ml-4 space-y-1">
+                            <li>• 手动设置属性值并锁定（参考上方「手动修改属性」章节）</li>
+                            <li>• 在世界书中为角色预设合理的属性范围</li>
+                            <li>• 使用投骰面板的「随机属性生成」功能重新 roll 一组数值</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分类五：模板设计理念 -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div class="bg-indigo-50 dark:bg-indigo-900/30 px-6 py-3 border-b border-gray-100 dark:border-gray-700">
+                <h3 class="font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                    <i class="fa-solid fa-lightbulb text-indigo-500"></i>
+                    模板设计理念
+                </h3>
+            </div>
+            <div class="divide-y divide-gray-100 dark:divide-gray-700">
+                <!-- Q12 -->
+                <div class="p-5">
+                    <h4 class="font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <span class="bg-indigo-500 text-white text-xs font-bold px-2 py-0.5 rounded">Q12</span>
+                        为什么表格中没有好感度 / 性格特征列？
+                    </h4>
+                    <div class="text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                        <p>你可以自行添加，但同捆模板未包含这些列是有原因的：</p>
+                        <ul class="ml-4 space-y-1">
+                            <li>• <strong>好感度：</strong>非常容易与 MVU 角色卡自带的好感度设置冲突，导致数值混乱</li>
+                            <li>• <strong>性格特征：</strong>容易导致 AI 描写陈腐化，角色行为变得刻板</li>
+                            <li>• <strong>AI的能力限制：</strong>每多一个表/列，都会加重 AI 的注意力负担</li>
+                        </ul>
+                        <p class="text-gray-500 dark:text-gray-400">你拥有完全的自由来自定义表格结构，但请理解其中的取舍。</p>
+                    </div>
+                </div>
+                <!-- Q13 -->
+                <div class="p-5">
+                    <h4 class="font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <span class="bg-indigo-500 text-white text-xs font-bold px-2 py-0.5 rounded">Q13</span>
+                        「选项表」的卡片很丑，标题是一大长串文字？
+                    </h4>
+                    <div class="text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                        <p>这是<strong>正常现象</strong>，不是 Bug。</p>
+                        <p>绝大多数表格的第一列是「名称」，所以脚本会抓取第一列作为卡片标题。而选项表的第一列直接就是「选项一」的完整内容，导致一大段文字被当作标题显示。</p>
+                        <p class="text-gray-500 dark:text-gray-400"><strong>建议：</strong>由于选项表没有经常检阅的必要，推荐在「设置 → 表格管理」中将其隐藏。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分类六：AI 行为问题 -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div class="bg-rose-50 dark:bg-rose-900/30 px-6 py-3 border-b border-gray-100 dark:border-gray-700">
+                <h3 class="font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                    <i class="fa-solid fa-robot text-rose-500"></i>
+                    AI 行为问题
+                </h3>
+            </div>
+            <div class="divide-y divide-gray-100 dark:divide-gray-700">
+                <!-- Q14 -->
+                <div class="p-5">
+                    <h4 class="font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <span class="bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded">Q14</span>
+                        表格填串了 / 对不上 / 某列填错了怎么办？
+                    </h4>
+                    <div class="text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                        <p>这是数据库填表提示词、模板表格说明提示词与 AI 模型能力三方混杂产生的问题，没有一劳永逸的解决方案，但可以从以下几个方面改善：</p>
+                        <ul class="ml-4 space-y-1">
+                            <li>• <strong>配置标签提取或标签排除：</strong>参考数据库插件本体的设置教程，仅提取正文发送给AI进行填表。如仅提取content标签内的内容</li>
+                            <li>• <strong>选择合适的模型：</strong>尽量使用填表能力强的模型，如 Gemini 2.5 Pro 等</li>
+                            <li>• <strong>精简表格结构：</strong>使用同捆模板或类似的精简设计，减少 AI 出错的机会</li>
+                            <li>• <strong>及时审核修正：</strong>在审核面板中发现错误时，第一时间拒绝或改正</li>
+                        </ul>
+                        <div class="mt-2 p-2 bg-rose-50 dark:bg-rose-900/20 rounded-lg border border-rose-200 dark:border-rose-700/50">
+                            <p class="text-rose-800 dark:text-rose-200 text-xs"><strong>重要：</strong>错误会自己累积，越拖越难修复。一旦发现问题请立即处理。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Q15 -->
+                <div class="p-5">
+                    <h4 class="font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <span class="bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded">Q15</span>
+                        AI 把检定结果、属性数值写进正文了？
+                    </h4>
+                    <div class="text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                        <p>这是 AI 偶发的抽风行为，<strong>无法完全避免</strong>。</p>
+                        <p>反而<strong>不建议</strong>在预设中添加「不要在正文显示检定结果」之类的提示——这类提示会占用注意力权重，且效果有限。</p>
+                        <p class="text-gray-500 dark:text-gray-400">如果频繁出现，可尝试更换模型或调整预设。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分类七：其他 -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div class="bg-slate-50 dark:bg-slate-700/30 px-6 py-3 border-b border-gray-100 dark:border-gray-700">
+                <h3 class="font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                    <i class="fa-solid fa-ellipsis text-slate-500"></i>
+                    其他
+                </h3>
+            </div>
+            <div class="divide-y divide-gray-100 dark:divide-gray-700">
+                <!-- Q16 -->
+                <div class="p-5">
+                    <h4 class="font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <span class="bg-slate-500 text-white text-xs font-bold px-2 py-0.5 rounded">Q16</span>
+                        数值怎么提升 / 变化？
+                    </h4>
+                    <div class="text-sm text-gray-600 dark:text-gray-300">
+                        <p>两种方式：</p>
+                        <ul class="ml-4 mt-2 space-y-1">
+                            <li>• AI会自动根据它对形式的判断执行数值增减。但你可以直接对 AI 说「我的XX提升了」，AI 会更新表格</li>
+                            <li>• 在审核面板或卡片编辑中手动修改（参考「手动修改属性」章节）</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Q17 -->
+                <div class="p-5">
+                    <h4 class="font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <span class="bg-slate-500 text-white text-xs font-bold px-2 py-0.5 rounded">Q17</span>
+                        可以二改模板吗？许可协议是什么？
+                    </h4>
+                    <div class="text-sm text-gray-600 dark:text-gray-300">
+                        <p>本项目采用 <strong>CC BY-NC-SA 4.0</strong> 协议。你可以自由二改和分享，只需：</p>
+                        <ul class="ml-4 mt-2 space-y-1">
+                            <li>• 署名原作者</li>
+                            <li>• 非商业用途</li>
+                            <li>• 以相同协议分享</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 11. 相关资源与推荐 -->
+<section id="section-resources" class="mb-16">
+    <div class="flex items-center gap-3 mb-6">
+        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-300 font-bold">10</span>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">相关资源与推荐</h2>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+        <p class="text-gray-600 dark:text-gray-300 mb-6">
+            这里整理了教程中演示用的卡片以及作者的其他优秀作品。
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="https://discord.com/channels/1134557553011998840/1449346163474956399" target="_blank" class="block p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 hover:shadow-sm transition-all group">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded">演示资源</span>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-gray-400 group-hover:text-blue-500"></i>
+                </div>
+                <h3 class="font-bold text-gray-900 dark:text-white mb-1">官居一品：大明1566大世界</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">本教程截图中使用的角色卡片。</p>
+            </a>
+            <a href="https://discord.com/channels/1134557553011998840/1408847602870653070" target="_blank" class="block p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 hover:shadow-sm transition-all group">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded">演示资源</span>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-gray-400 group-hover:text-blue-500"></i>
+                </div>
+                <h3 class="font-bold text-gray-900 dark:text-white mb-1">Bang Dream! It's MyGO!!!!!</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">本教程截图中使用的角色卡片。</p>
+            </a>
+            <a href="https://discord.com/channels/1134557553011998840/1404737885026127932" target="_blank" class="block p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 hover:shadow-sm transition-all group">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 px-2 py-1 rounded">作者资源</span>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-gray-400 group-hover:text-purple-500"></i>
+                </div>
+                <h3 class="font-bold text-gray-900 dark:text-white mb-1">同人角色世界书</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">作者发布的同人角色世界书，包含近900个角色，欢迎点赞使用。</p>
+            </a>
+        </div>
+    </div>
+</section>
+
+    <!-- 页脚 -->
+    <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-auto">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+            <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                <i class="fa-brands fa-creative-commons text-lg"></i>
+                <i class="fa-brands fa-creative-commons-by text-lg"></i>
+                <i class="fa-brands fa-creative-commons-nc text-lg"></i>
+                <i class="fa-brands fa-creative-commons-sa text-lg"></i>
+                <span class="ml-1">2026 kousakayou. CC BY-NC-SA 4.0</span>
+            </p>
+            <p class="text-xs text-gray-400 dark:text-gray-500 font-mono">v3.00</p>
+        </div>
+    </footer>
+
+    <!-- 更新日志模态框 -->
+    <div id="about-modal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="toggleModal('about-modal')"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 text-left shadow-2xl transition-all sm:w-full sm:max-w-lg border border-gray-100 dark:border-gray-700">
+                    <div class="bg-indigo-600 px-6 py-4">
+                        <h3 class="text-lg font-bold text-white flex items-center justify-between">
+                            更新日志
+                            <button onclick="toggleModal('about-modal')" class="text-indigo-200 hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
+                        </h3>
+                    </div>
+                    <div class="px-6 py-6 max-h-[60vh] overflow-y-auto">
+                        <ul class="space-y-4 text-sm" id="changelog-list">
+                            <!-- JS 注入 -->
+                        </ul>
+                    </div>
+                    <!-- 底部按钮 -->
+                    <div class="bg-gray-50 dark:bg-gray-700/30 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                        <button type="button" class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto transition-colors" onclick="toggleModal('about-modal')">
+                            知道了
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox Modal -->
+    <div id="lightbox-modal" class="fixed inset-0 z-[100] hidden bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 opacity-0" onclick="closeLightbox()">
+        <button class="absolute top-4 right-4 text-white hover:text-gray-300 z-[101] p-2 bg-black/50 rounded-full w-10 h-10 flex items-center justify-center transition-colors" onclick="closeLightbox()">
+            <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+        <img id="lightbox-image" src="" alt="Full view" class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl transform transition-transform duration-300 scale-95" onclick="event.stopPropagation()">
+    </div>
+
+    <script>
+        // 更新日志数据
+        const changelogData = [
+            { ver: 'v3.0', content: '新增【数据验证】功能，支持多种规则类型、关联验证、智能修改建议与自动回滚保护；新增【随机属性】与【属性规则预设】功能，支持 COC/DND 规则自定义；新增"对 User 隐藏投骰结果"选项。' },
+            { ver: 'v2.68', content: 'UI 全面升级，新增【更新审核】面板，优化 DND/COC 规则配置，支持人物关系图拖拽与头像管理。' },
+            { ver: 'v2.47', content: '修复移动端设置面板滚动问题，优化整体对比编辑弹窗。' },
+            { ver: 'v2.45', content: '新增同一行多字段变更合并显示。' },
+            { ver: 'v2.31', content: '新增初步审核面板功能。' },
+            { ver: 'v2.22', content: '仪表盘 NPC 列表显示角色头像，支持在场/离场状态区分。' },
+            { ver: 'v2.09', content: '新增对抗检定平手规则设置。' },
+            { ver: 'v2.07', content: '重构投骰系统，支持 COC/DND 双核心规则切换。' },
+            { ver: 'v1.86', content: '新增人物关系可视化功能。' }
+        ];
+
+        // 渲染更新日志
+        const list = document.getElementById('changelog-list');
+        list.innerHTML = ''; // Clear existing
+        changelogData.forEach((item, index) => {
+            const isLatest = index === 0;
+            const badgeClass = isLatest ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400';
+            const html = `
+                <li class="relative pl-4 border-l-2 ${isLatest ? 'border-indigo-500' : 'border-gray-200 dark:border-gray-700'}">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="px-2 py-0.5 rounded text-xs font-mono font-bold ${badgeClass}">${item.ver}</span>
+                        ${isLatest ? '<span class="text-xs text-red-500 font-bold animate-pulse">NEW</span>' : ''}
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 leading-relaxed">${item.content}</p>
+                </li>
+            `;
+            list.innerHTML += html;
+        });
+
+        // Lightbox logic
+        function initLightbox() {
+            const images = document.querySelectorAll('.img-card img');
+            const modal = document.getElementById('lightbox-modal');
+            const modalImg = document.getElementById('lightbox-image');
+
+            images.forEach(img => {
+                img.addEventListener('click', () => {
+                    modalImg.src = img.src;
+                    modal.classList.remove('hidden');
+                    // Small delay to allow display:block to apply before opacity transition
+                    requestAnimationFrame(() => {
+                        modal.classList.remove('opacity-0');
+                        modalImg.classList.remove('scale-95');
+                        modalImg.classList.add('scale-100');
+                    });
+                });
+            });
+        }
+
+        function closeLightbox() {
+            const modal = document.getElementById('lightbox-modal');
+            const modalImg = document.getElementById('lightbox-image');
+
+            modal.classList.add('opacity-0');
+            modalImg.classList.remove('scale-100');
+            modalImg.classList.add('scale-95');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modalImg.src = '';
+            }, 300);
+        }
+
+        // Initialize Lightbox on load
+        document.addEventListener('DOMContentLoaded', initLightbox);
+
+
+        // 模态框逻辑
+        function toggleModal(id) {
+            const el = document.getElementById(id);
+            if (el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+                // Simple animation hook could go here
+            } else {
+                el.classList.add('hidden');
+            }
+        }
+
+        // ESC 键关闭
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape") {
+                const modal = document.getElementById('about-modal');
+                if (!modal.classList.contains('hidden')) {
+                    toggleModal('about-modal');
+                }
+                const lightbox = document.getElementById('lightbox-modal');
+                if (!lightbox.classList.contains('hidden')) {
+                    closeLightbox();
+                }
+            }
+        });
+
+        // 深色模式逻辑
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+            // 初始化主题（默认 dark mode）
+            if (localStorage.getItem('theme') === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+            }
+    </script>
+</body>
+</html>
